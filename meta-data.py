@@ -26,14 +26,14 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 			NAK if problem, DUP if the IP and port already registered
 		"""
 		try:
-			if db.AddDataNode(p["addr"], p["port"]) != 0:
+			if db.AddDataNode(p.getAddr(), p.getPort()) != 0:
 				print "done"
 				self.request.sendall("ACK") 
 			else:
 				print "exists"
 				self.request.sendall("DUP")
-		except:
-			print "error"
+		except Exception as e :
+			print e
 			self.request.sendall("NAK")
 
 	# def handle_list(self, db):
