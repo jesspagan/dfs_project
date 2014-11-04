@@ -26,55 +26,58 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 			NAK if problem, DUP if the IP and port already registered
 		"""
 		try:
-			if # Fill condition:
+			if db.AddDataNode(p["addr"], p["port"]) != 0:
+				print "done"
 				self.request.sendall("ACK") 
 			else:
+				print "exists"
 				self.request.sendall("DUP")
 		except:
+			print "error"
 			self.request.sendall("NAK")
 
-	def handle_list(self, db):
-		"""Get the file list from the database and send list to client"""
-		try:
-			# Fill code here
-		except:
-			self.request.sendall("NAK")	
+	# def handle_list(self, db):
+	# 	"""Get the file list from the database and send list to client"""
+	# 	try:
+	# 		# Fill code here
+	# 	except:
+	# 		self.request.sendall("NAK")	
 
-	def handle_put(self, db, p):
-		"""Insert new file into the database and send data nodes to save
-		   the file.
-		"""
+	# def handle_put(self, db, p):
+	# 	"""Insert new file into the database and send data nodes to save
+	# 	   the file.
+	# 	"""
 	       
-		# Fill code 
+	# 	# Fill code 
 	
-		if db.InsertFile(info[0], info[1]):
-			# Fill code
+	# 	if db.InsertFile(info[0], info[1]):
+	# 		# Fill code
 			
-		else:
-			self.request.sendall("DUP")
+	# 	else:
+	# 		self.request.sendall("DUP")
 	
-	def handle_get(self, db, p):
-		"""Check if file is in database and return list of
-			server nodes that contain the file.
-		"""
+	# def handle_get(self, db, p):
+	# 	"""Check if file is in database and return list of
+	# 		server nodes that contain the file.
+	# 	"""
 
-		# Fill code to get the file name from packet and then 
-		# get the fsize and array of metadata server
+	# 	# Fill code to get the file name from packet and then 
+	# 	# get the fsize and array of metadata server
 
-		if fsize:
-			# Fill code
+	# 	if fsize:
+	# 		# Fill code
 
-			self.request.sendall(p.getEncodedPacket())
-		else:
-			self.request.sendall("NFOUND")
+	# 		self.request.sendall(p.getEncodedPacket())
+	# 	else:
+	# 		self.request.sendall("NFOUND")
 
-	def handle_blocks(self, db, p):
-		"""Add the data blocks to the file inode"""
+	# def handle_blocks(self, db, p):
+	# 	"""Add the data blocks to the file inode"""
 
-		# Fill code to get file name and blocks from
-		# packet
+	# 	# Fill code to get file name and blocks from
+	# 	# packet
 	
-		# Fill code to add blocks to file inode
+	# 	# Fill code to add blocks to file inode
 
 		
 	def handle(self):
@@ -105,18 +108,22 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 		elif cmd == "list":
 			# Client asking for a list of files
 			# Fill code
+			self.handle_list(db)
 		
 		elif cmd == "put":
 			# Client asking for servers to put data
 			# Fill code
+			self.handle_put(db, p)
 		
 		elif cmd == "get":
 			# Client asking for servers to get data
 			# Fill code
+			self.handle_get(db, p)
 
 		elif cmd == "dblks":
 			# Client sending data blocks for file
-			 # Fill code
+			# Fill code
+			self.handle_blocks(db, p)
 
 
 		db.Close()
