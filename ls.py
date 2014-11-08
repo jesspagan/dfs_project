@@ -10,7 +10,7 @@
 
 
 import socket
-
+import sys
 from Packet import *
 
 def usage():
@@ -20,21 +20,34 @@ def usage():
 def client(ip, port):
 
 	# Contacts the metadata server and ask for list of files.
+	
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect((ip, port))
+
+	p = Packet()
+	p.BuildListPacket()
+	sock.sendall(p.getEncodedPacket())
+	r = sock.recv(1024)
+	print r, type(r)
+	p.DecodePacket(r)
+	filelist = p.getFileArray()
+	print filelist, "este es el 0 de filelist"
+
 
 if __name__ == "__main__":
-
+	
 	if len(sys.argv) < 2:
 		usage()
 
 	ip = None
 	port = None 
 	server = sys.argv[1].split(":")
-	if len(server == 1):
+	if len(server) == 1:
 		ip = server[0]
 		port = 8000
-	elif len(server == 2):
+	elif len(server) == 2:
 		ip = server[0]
-		port = int server[1]
+		port = int(server[1])
 
 	if not ip:
 		usage()

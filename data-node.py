@@ -8,7 +8,6 @@
 #
 
 from Packet import *
-
 import sys
 import socket
 import SocketServer
@@ -26,8 +25,6 @@ def register(meta_ip, meta_port, data_ip, data_port):
 	"""
 
 	# Establish connection
-	
-	# Fill code
 
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((meta_ip, meta_port))
@@ -117,7 +114,7 @@ if __name__ == "__main__":
 		if not os.path.isdir(DATA_PATH):
 			print "Error: Data path %s is not a directory." % DATA_PATH
 			usage()
-			
+
 	except:
 		usage()
 

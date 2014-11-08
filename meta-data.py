@@ -26,33 +26,46 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 			NAK if problem, DUP if the IP and port already registered
 		"""
 		try:
-			print "enter"
+			# If data node registration was successfull, send acknowledge
 			if db.AddDataNode(p.getAddr(), p.getPort()) != 0:
-				print "done"
+				# print "done"
 				self.request.sendall("ACK") 
+
 			else:
-				print "exists"
+				# print "exists"
 				self.request.sendall("DUP")
+				
 		except Exception as e :
 			print e
 			self.request.sendall("NAK")
 
-	# def handle_list(self, db):
-	# 	"""Get the file list from the database and send list to client"""
-	# 	try:
-	# 		# Fill code here
-	# 	except:
-	# 		self.request.sendall("NAK")	
+	def handle_list(self, db):
+		"""Get the file list from the database and send list to client"""
+		try:
+			# Search files information from data base
+			dbfiles = db.GetFiles()
+			print dbfiles, "este es el file de los datos"
+
+			# Create packet for sending to client
+			p = Packet()
+			p.BuildListResponse(dbfiles)
+			print p.getFileArray(), "este es el filelist"
+
+			# Sending encoded packet to list client
+			self.request.sendall(p.getEncodedPacket())
+
+		except:
+			self.request.sendall("NAK")	
 
 	# def handle_put(self, db, p):
 	# 	"""Insert new file into the database and send data nodes to save
 	# 	   the file.
 	# 	"""
 	       
-	# 	# Fill code 
+	# # 	# Fill code 
 	
 	# 	if db.InsertFile(info[0], info[1]):
-	# 		# Fill code
+	# # 		# Fill code
 			
 	# 	else:
 	# 		self.request.sendall("DUP")
