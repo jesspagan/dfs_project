@@ -27,7 +27,11 @@ def register(meta_ip, meta_port, data_ip, data_port):
 
 	# Establish connection
 	
-	# Fill code	
+	# Fill code
+
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect((meta_ip, meta_port))
+		
 
 	try:
 		response = "NAK"
@@ -107,12 +111,13 @@ if __name__ == "__main__":
 		PORT = int(sys.argv[2])
 		DATA_PATH = sys.argv[3]
 
-		if len(sys.argv > 4):
+		if len(sys.argv) > 4:
 			META_PORT = int(sys.argv[4])
 
 		if not os.path.isdir(DATA_PATH):
 			print "Error: Data path %s is not a directory." % DATA_PATH
 			usage()
+			
 	except:
 		usage()
 

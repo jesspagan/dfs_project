@@ -26,6 +26,7 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 			NAK if problem, DUP if the IP and port already registered
 		"""
 		try:
+			print "enter"
 			if db.AddDataNode(p.getAddr(), p.getPort()) != 0:
 				print "done"
 				self.request.sendall("ACK") 
@@ -71,13 +72,16 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 	# 	else:
 	# 		self.request.sendall("NFOUND")
 
-	# def handle_blocks(self, db, p):
-	# 	"""Add the data blocks to the file inode"""
+	def handle_blocks(self, db, p):
+		"""Add the data blocks to the file inode"""
 
-	# 	# Fill code to get file name and blocks from
-	# 	# packet
+		# Fill code to get file name and blocks from
+		# packet
+		fname = p.getFileName()
+		blocks = p.getDataBlocks()
 	
-	# 	# Fill code to add blocks to file inode
+		# Fill code to add blocks to file inode
+		
 
 		
 	def handle(self):
@@ -91,7 +95,7 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 
 		# Receive a msg from the list, data-node, or copy clients
 		msg = self.request.recv(1024)
-		print msg, type(msg)
+		# print msg, type(msg)
 		
 		# Decode the packet received
 		p.DecodePacket(msg)
@@ -129,7 +133,7 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 		db.Close()
 
 if __name__ == "__main__":
-    HOST, PORT = "", 8000
+    HOST, PORT = "localhost", 8000
 
     if len(sys.argv) > 1:
     	try:

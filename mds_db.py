@@ -47,8 +47,8 @@ class mds_db:
 			self.c.execute(query)
 			return self.c.lastrowid 
 		except sqlite3.IntegrityError as e: 
-			print type(e), dir(e), e
-			if e.message.split()[-1].strip() == "unique":
+			# print type(e), dir(e), e
+			if e.message.split()[0].strip() == "UNIQUE":
 				return 0
 			else:
 				raise
