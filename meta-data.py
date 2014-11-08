@@ -31,12 +31,14 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 				# print "done"
 				self.request.sendall("ACK") 
 
+			# If data node is duplicate, send duplicated
 			else:
 				# print "exists"
 				self.request.sendall("DUP")
-				
-		except Exception as e :
-			print e
+
+		# If something went wrong, send no acknowledge
+		except:
+			# print e
 			self.request.sendall("NAK")
 
 	def handle_list(self, db):

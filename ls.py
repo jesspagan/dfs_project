@@ -28,10 +28,12 @@ def client(ip, port):
 	p.BuildListPacket()
 	sock.sendall(p.getEncodedPacket())
 	r = sock.recv(1024)
-	print r, type(r)
+	# print r, type(r)
 	p.DecodePacket(r)
 	filelist = p.getFileArray()
-	print filelist, "este es el 0 de filelist"
+	for item in filelist:
+		print item[0], item[1]
+	# print filelist[0][0], "este es el 0 de filelist"
 
 
 if __name__ == "__main__":
