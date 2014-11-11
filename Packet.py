@@ -94,6 +94,7 @@ class Packet:
 		"""Returns a the block_id from a packet."""
 		return self.packet["blockid"]
 
+	def getFileInfo(self):
 		"""Returns the file info in a packet."""
 		if self.packet.has_key("fname") and self.packet.has_key("fsize"):
 			return self.packet["fname"], self.packet["fsize"] 

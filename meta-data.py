@@ -59,18 +59,21 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 		except:
 			self.request.sendall("NAK")	
 
-	# def handle_put(self, db, p):
-	# 	"""Insert new file into the database and send data nodes to save
-	# 	   the file.
-	# 	"""
+	def handle_put(self, db, p):
+		"""Insert new file into the database and send data nodes to save
+		   the file.
+		"""
 	       
-	# # 	# Fill code 
-	
-	# 	if db.InsertFile(info[0], info[1]):
-	# # 		# Fill code
+		# Fill code 
+		info = p.getFileInfo()
+		if db.InsertFile(info[0], info[1]):
+			listOfNodes = db.GetDataNodes()
+			pnodes = Packet()
+			pnodes.BuildPutResponse(listOfNodes)
+			self.request.sendall(pnodes.getEncodedPacket())
 			
-	# 	else:
-	# 		self.request.sendall("DUP")
+		else:
+			self.request.sendall("DUP")
 	
 	# def handle_get(self, db, p):
 	# 	"""Check if file is in database and return list of

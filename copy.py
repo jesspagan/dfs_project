@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 ###############################################################################
 #
 # Filename: mds_db.py
@@ -19,30 +20,77 @@ def usage():
 	sys.exit(0)
 
 def copyToDFS(address, fname, path):
-	""" Contact the metadata server to ask to copu file fname,
+	""" Contact the metadata server to ask to copy file fname,
 	    get a list of data nodes. Open the file in path to read,
 	    divide in blocks and send to the data nodes. 
 	"""
 
 	# Create a connection to the data server
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect(address)
 
-	# Fill code
 
 	# Read file
+	fopen = open(path, 'r')
+	fread = fopen.read()
+	fsize = len(fread)
+	fopen.close()
 
 	# Fill code
 
 	# Create a Put packet with the fname and the length of the data,
 	# and sends it to the metadata server 
+	p = Packet()
+	p.BuildPutPacket(fname, fsize)
 
-	# Fill code
+	sock.sendall(p.getEncodedPacket())
+	r = sock.recv(1024)
+	print "Esto es la respues del meta data server ", r
+	p.DecodePacket(r)
+	dnList = p.getDataNodes()
+	print "Esta es la lista de nodos ", dnList 
+	dnsize = len(dnList)
+	print "Cantidad de nodos: ", dnsize
+
 
 	# If no error or file exists
 	# Get the list of data nodes.
 	# Divide the file in blocks
 	# Send the blocks to the data servers
 
-	# Fill code	
+	blist = []
+	partSize = (fsize/dnsize)
+	counter = 0
+	print "Tamaño de cada bloque: ", partSize
+
+	for i in range(0, dnsize):
+		if(i == (dnsize-1)):
+			blist.append(fread[counter:])
+		else:
+			end = counter + partSize
+			blist.append(fread[counter:end])
+			counter += partSize
+
+	print "Lista de bloques:", blist
+
+	# pblocks = Packet()
+	# pblocks.BuildDataBlockPacket(fname, blist)
+	# sock.sendall(pblocks.getEncodedPacket())
+	# res = sock.recv(1024)
+
+	sockDataN = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+	pinfo = Packet()
+	pinfo.BuildPutPacket(fname, fsize)
+	IDlist = []
+	for i in range(0, dnsize):
+		sockDataN.connect(dnList[i][0], dnList[i][1])
+		sockDataN.sendall(pinfo.getEncodedPacket())
+		sockDataN.sendall(blist[i])
+		IDlist.append(sockDataN.recv(1024))
+
+	print "lista de IDs: ", IDlist
+
 
 	# Notify the metadata server where the blocks are saved.
 
