@@ -1,12 +1,18 @@
 ###############################################################################
 #
 # Filename: Packet.py
-# Author: Jose R. Ortiz and ... (hopefully some students contribution)
+# Author: Jose R. Ortiz, Julio J. De la Cruz and Jessica Pagan
+# Course: CCOM4017
+#
+# Department of Computer Science
+# University of Puerto Rico, Rio Piedras Campus
 #
 # Description:
-# 	Packet creation support library for the DFS project. Database info for
+# 	Packet creation support library for the DFS project.
+#	It will create packets with the information that needs to be send.
+#	In charge of encode the packets, using json, for send them through sockets.
+#	It will also decode the packets at soon as they arrive.
 #
-# Please modify globals with appropiate info.
 
 import json
 
