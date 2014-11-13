@@ -57,19 +57,21 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 		   copy client.
 		"""
 
-		fname, fsize = p.getFileInfo()
-
 		self.request.send("OK")
 
 		# Generates an unique block id.
 		blockid = str(uuid.uuid1())
 
+		# Open the file for the new data block.
+		f = open(DATA_PATH + blockid, 'w')
 
-		# Open the file for the new data block.  
 		# Receive the data block.
-		# Send the block id back
+		block = self.request.recv(1024)
+		f.write(block)
+		print block
 
-		# Fill code
+		# Send the block id back
+		self.request.sendall(blockid)
 
 	def handle_get(self, p):
 		
@@ -90,7 +92,9 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 		p.DecodePacket(msg)
 
 		cmd = p.getCommand()
+		print cmd
 		if cmd == "put":
+			print "put"
 			self.handle_put(p)
 
 		elif cmd == "get":

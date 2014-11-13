@@ -75,6 +75,7 @@ def copyToDFS(address, fname, path):
 
 
 	# Send the blocks to the data servers
+	bids = []
 
 	for i in dnodes:
 		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -82,10 +83,15 @@ def copyToDFS(address, fname, path):
 
 		p.BuildPutPacket(fname, fsize)
 		sockdn.sendall(p.getEncodedPacket())
+		r = sockdn.recv(1024)
 
+		if r == "OK":
+			sockdn.sendall(blist.pop(0))
+			r = sockdn.recv(1024)
+			bids.append(r)
 
-		sockdn.close()
-
+		# sockdn.close()
+	print bids
 
 	# Notify the metadata server where the blocks are saved.
 
