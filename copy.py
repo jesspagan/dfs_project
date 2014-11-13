@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 ###############################################################################
 #
 # Filename: mds_db.py
@@ -61,7 +60,7 @@ def copyToDFS(address, fname, path):
 	blist = []
 	partSize = (fsize/dnsize)
 	counter = 0
-	print "Tamaño de cada bloque: ", partSize
+	print "Size de cada bloque: ", partSize
 
 	for i in range(0, dnsize):
 		if(i == (dnsize-1)):
