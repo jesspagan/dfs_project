@@ -25,7 +25,6 @@ def usage():
 def client(ip, port):
 
 	# Contacts the metadata server and ask for list of files.
-	
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((ip, port))
 
@@ -36,13 +35,14 @@ def client(ip, port):
 
 	# Received the list of files and display the information
 	r = sock.recv(1024)
-	# print r, type(r)
+		# print r, type(r)
 
 	p.DecodePacket(r)
 	filelist = p.getFileArray()
 
 	for item in filelist:
 		print item[0], item[1], "bytes"
+		
 	# print filelist[0][0], "este es el 0 de filelist"
 
 
