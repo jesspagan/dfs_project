@@ -30,65 +30,61 @@ def copyToDFS(address, fname, path):
 
 
 	# Read file
-	fopen = open(path, 'r')
-	fread = fopen.read()
-	fsize = len(fread)
-	fopen.close()
+	f = open(path, 'r')
+	fdata = f.read()
+	f.close()
 
-	# Fill code
+	fsize = len(fdata)
+
 
 	# Create a Put packet with the fname and the length of the data,
 	# and sends it to the metadata server 
 	p = Packet()
 	p.BuildPutPacket(fname, fsize)
-
 	sock.sendall(p.getEncodedPacket())
-	r = sock.recv(1024)
-	print "Esto es la respues del meta data server ", r
-	p.DecodePacket(r)
-	dnList = p.getDataNodes()
-	print "Esta es la lista de nodos ", dnList 
-	dnsize = len(dnList)
-	print "Cantidad de nodos: ", dnsize
 
 
 	# If no error or file exists
+	r = sock.recv(1024)
+	if r == "DUP":
+		print "Duplicate File"
+		return
+
+
 	# Get the list of data nodes.
+	else:
+		p.DecodePacket(r)
+		dnodes = p.getDataNodes()
+		# print "Data Nodes list:", dnodes
+
 	# Divide the file in blocks
+		blist = []
+
+		dnsize = len(dnodes)
+		bsize = (fsize/dnsize)
+
+		for i in range(0, fsize, bsize):
+			if (i/bsize) + 1 == dnsize:
+				blist.append(fdata[i:])
+				break
+
+			else:
+				blist.append(fdata[i:i + bsize])
+
+		# print "data blocks: ", blist
+
+
 	# Send the blocks to the data servers
 
-	blist = []
-	partSize = (fsize/dnsize)
-	counter = 0
-	print "Size de cada bloque: ", partSize
+	for i in dnodes:
+		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sockdn.connect((i[0], i[1]))
 
-	for i in range(0, dnsize):
-		if(i == (dnsize-1)):
-			blist.append(fread[counter:])
-		else:
-			end = counter + partSize
-			blist.append(fread[counter:end])
-			counter += partSize
+		p.BuildPutPacket(fname, fsize)
+		sockdn.sendall(p.getEncodedPacket())
 
-	print "Lista de bloques:", blist
 
-	# pblocks = Packet()
-	# pblocks.BuildDataBlockPacket(fname, blist)
-	# sock.sendall(pblocks.getEncodedPacket())
-	# res = sock.recv(1024)
-
-	sockDataN = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-	pinfo = Packet()
-	pinfo.BuildPutPacket(fname, fsize)
-	IDlist = []
-	for i in range(0, dnsize):
-		sockDataN.connect(dnList[i][0], dnList[i][1])
-		sockDataN.sendall(pinfo.getEncodedPacket())
-		sockDataN.sendall(blist[i])
-		IDlist.append(sockDataN.recv(1024))
-
-	print "lista de IDs: ", IDlist
+		sockdn.close()
 
 
 	# Notify the metadata server where the blocks are saved.

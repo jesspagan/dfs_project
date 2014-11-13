@@ -46,12 +46,12 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 		try:
 			# Search files information from data base
 			dbfiles = db.GetFiles()
-			print dbfiles, "este es el file de los datos"
+			# print dbfiles, "este es el file de los datos"
 
 			# Create packet for sending to client
 			p = Packet()
 			p.BuildListResponse(dbfiles)
-			print p.getFileArray(), "este es el filelist"
+			# print p.getFileArray(), "este es el filelist"
 
 			# Sending encoded packet to list client
 			self.request.sendall(p.getEncodedPacket())
@@ -66,11 +66,12 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 	       
 		# Fill code 
 		info = p.getFileInfo()
+
 		if db.InsertFile(info[0], info[1]):
-			listOfNodes = db.GetDataNodes()
-			pnodes = Packet()
-			pnodes.BuildPutResponse(listOfNodes)
-			self.request.sendall(pnodes.getEncodedPacket())
+			# Fill code
+			dnodes = db.GetDataNodes()
+			p.BuildPutResponse(dnodes)
+			self.request.sendall(p.getEncodedPacket())
 			
 		else:
 			self.request.sendall("DUP")

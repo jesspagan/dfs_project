@@ -66,14 +66,9 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 
 
 		# Open the file for the new data block.  
-		DATA_PATH = sys.argv[3]
-		fopen = open(DATA_PATH+fname, 'w')
-
 		# Receive the data block.
 		# Send the block id back
-		res = sock.recv(1024)
-		sock.sendall(blockid)
-		
+
 		# Fill code
 
 	def handle_get(self, p):
