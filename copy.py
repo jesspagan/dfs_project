@@ -75,8 +75,8 @@ def copyToDFS(address, fname, path):
 
 
 	# Send the blocks to the data servers
-	bids = []
 
+	print blist
 	for i in dnodes:
 		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sockdn.connect((i[0], i[1]))
@@ -88,15 +88,20 @@ def copyToDFS(address, fname, path):
 		if r == "OK":
 			sockdn.sendall(blist.pop(0))
 			r = sockdn.recv(1024)
-			bids.append(r)
-
-		# sockdn.close()
-	print bids
+			#Adding the chunk id to the data nodes list 
+			i.append(r)
+	
+		sockdn.close()
 
 	# Notify the metadata server where the blocks are saved.
+	p.BuildDataBlockPacket(fname, dnodes)
 
-	# Fill code
-	
+	# We have to create a new socket to send the blocks and 
+	# we don't know why
+	sockBlks = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sockBlks.connect(address)
+	sockBlks.sendall(p.getEncodedPacket())
+
 def copyFromDFS(address, fname, path):
 	""" Contact the metadata server to ask for the file blocks of
 	    the file fname.  Get the data blocks from the data nodes.
@@ -104,16 +109,38 @@ def copyFromDFS(address, fname, path):
 	"""
 
    	# Contact the metadata server to ask for information of fname
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect(address)
 
-	# Fill code
+	p = Packet()
+	p.BuildGetPacket(fname)
+	sock.sendall(p.getEncodedPacket())
 
-	# If there is no error response Retreive the data blocks
-
-	# Fill code
-
-    	# Save the file
 	
-	# Fill code
+	# If there is no error response Retreive the data blocks
+	r = sock.recv(1024)
+	p.DecodePacket(r)
+	dnList = p.getDataNodes()
+
+	print dnList
+	f = open(path, 'a')
+
+	# Connect to each data node to retrieve 
+	for dnode in dnList:
+		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		sockdn.connect((dnode[0], dnode[1]))
+
+		p.BuildGetDataBlockPacket(dnode[2])
+		sockdn.sendall(p.getEncodedPacket())
+
+		# Save the file
+		print "antes de"
+		r = sockdn.recv(1024)
+		f.write(r)
+		sockdn.close()
+
+
+	f.close()
 
 if __name__ == "__main__":
 #	client("localhost", 8000)

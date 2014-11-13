@@ -76,33 +76,37 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 		else:
 			self.request.sendall("DUP")
 	
-	# def handle_get(self, db, p):
-	# 	"""Check if file is in database and return list of
-	# 		server nodes that contain the file.
-	# 	"""
+	def handle_get(self, db, p):
+		"""Check if file is in database and return list of
+			server nodes that contain the file.
+		"""
 
-	# 	# Fill code to get the file name from packet and then 
-	# 	# get the fsize and array of metadata server
+		# Get the file name from packet and then 
+		# get the fsize and array of metadata server
+		fname = p.getFileName()
+		fsize, MetaArray = db.GetFileInode(fname)
+		print MetaArray
 
-	# 	if fsize:
-	# 		# Fill code
+		if fsize:
+			p.BuildGetResponse(MetaArray, fsize)
+			self.request.sendall(p.getEncodedPacket())
 
-	# 		self.request.sendall(p.getEncodedPacket())
-	# 	else:
-	# 		self.request.sendall("NFOUND")
+		else:
+			self.request.sendall("NFOUND")
+
 
 	def handle_blocks(self, db, p):
 		"""Add the data blocks to the file inode"""
+		print "Estoy dentro de handle_blocks"
 
-		# Fill code to get file name and blocks from
-		# packet
+		# Get file name and blocks from packet
 		fname = p.getFileName()
 		blocks = p.getDataBlocks()
-	
-		# Fill code to add blocks to file inode
+		
+		# Add blocks to file inode
+		db.AddBlockToInode(fname, blocks)
 		
 
-		
 	def handle(self):
 
 		# Establish a connection with the local database
@@ -122,7 +126,6 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 
 		# Extract the command part of the received packet
 		cmd = p.getCommand()
-
 		# Invoke the proper action 
 		if   cmd == "reg":
 			# Registration client
@@ -130,22 +133,18 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 
 		elif cmd == "list":
 			# Client asking for a list of files
-			# Fill code
 			self.handle_list(db)
 		
 		elif cmd == "put":
 			# Client asking for servers to put data
-			# Fill code
 			self.handle_put(db, p)
 		
 		elif cmd == "get":
 			# Client asking for servers to get data
-			# Fill code
 			self.handle_get(db, p)
 
 		elif cmd == "dblks":
 			# Client sending data blocks for file
-			# Fill code
 			self.handle_blocks(db, p)
 
 
