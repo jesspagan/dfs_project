@@ -1,15 +1,10 @@
 ###############################################################################
 #
-# Filename: ls.py
-# Author: Jose R. Ortiz, Julio J. De la Cruz and Jessica Pagan
-# Course: CCOM4017
-#
-# Department of Computer Science
-# University of Puerto Rico, Rio Piedras Campus
+# Filename: mds_db.py
+# Author: Jose R. Ortiz and ... (hopefully some students contribution)
 #
 # Description:
-# 	List client for the DFS.
-#	Display all the files that are storaged in the data base.
+# 	List client for the DFS
 #
 
 
@@ -29,20 +24,15 @@ def client(ip, port):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((ip, port))
 
-	# Creates a packet to ask the metadata to send the file list
 	p = Packet()
 	p.BuildListPacket()
 	sock.sendall(p.getEncodedPacket())
-
-	# Received the list of files and display the information
 	r = sock.recv(1024)
 	# print r, type(r)
-
 	p.DecodePacket(r)
 	filelist = p.getFileArray()
-
 	for item in filelist:
-		print item[0], item[1], "bytes"
+		print item[0], item[1]
 	# print filelist[0][0], "este es el 0 de filelist"
 
 
