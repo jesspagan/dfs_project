@@ -73,13 +73,15 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 		
 		data = ""
 		while (len(data) < bsize):
-			res = self.request.recv(1024)
-			data = data + res
+			r = self.request.recv(1024)
+			data = data + r
 			self.request.send("OK")
 
 		f.write(data)
+		r = self.request.recv(1024)
 
 		# Send the block id back
+		print "Block id:", blockid
 		self.request.sendall(blockid)
 
 		self.request.close()

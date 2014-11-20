@@ -40,56 +40,38 @@ def copyToDFS(address, fname, path):
 	# Create a Put packet with the fname and the length of the data,
 	# and sends it to the metadata server 
 	p = Packet()
+
 	p.BuildPutPacket(fname, fsize)
 	sock.sendall(p.getEncodedPacket())
 
-
 	# If no error or file exists
 	r = sock.recv(1024)
+	sock.close()
+
 	if r == "DUP":
 		print "Duplicate File"
 		return
-
 
 	# Get the list of data nodes.
 	else:
 		p.DecodePacket(r)
 		dnodes = p.getDataNodes()
-		# print "Data Nodes list:", dnodes
 
 	# Divide the file in blocks
 		blist = []
-
 		dnsize = len(dnodes)
-		bsize = (fsize/dnsize)
-		# counter = 1
-		# dsize = fsize/dnsize
-		# tmp = dsize
-
-	# Verify if the data block size is greater than the buffer size	
-		# while(tmp > 1024):
-		# 	counter += 1
-		# 	tmp = dsize / counter
-
-		# chunks = counter * dnsize
-		# bsize = (fsize / chunks)
-
-		# print "Chunks: ", chunks, "bsize: ", bsize
+		bsize = (fsize / dnsize)
 
 		for i in range(0, fsize, bsize):
-			if (i/bsize) + 1 == dnsize:
+			if (i / bsize) + 1 == dnsize:
 				blist.append(fdata[i:])
 				break
 
 			else:
 				blist.append(fdata[i:i + bsize])
 
-		# print "data blocks: ", blist
-
 
 	# Send the blocks to the data servers
-
-
 	for i in dnodes:
 		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sockdn.connect((i[0], i[1]))
@@ -107,29 +89,33 @@ def copyToDFS(address, fname, path):
 			r = sockdn.recv(1024)
 
 			while len(data) > 0:
-				print data
-				if data > 1024:
-					a = data[0:1024]
-					data = data[1024:]
-					print a
+				chunk = data[0:1024]
+				data = data[1024:]
+				print chunk
 
-					sockdn.sendall(a)
-					r = sockdn.recv(1024)
+				sockdn.sendall(chunk)
+				r = sockdn.recv(1024)
+				print r
 
-			#Adding the chunk id to the data nodes list 
+			#Adding the chunk id to the data nodes list
+			sockdn.sendall("OK")
 			r = sockdn.recv(1024)
+			print "Unique: ", r
+			
 			i.append(r)
-	
+			print i
+
 		sockdn.close()
 
+		print dnodes
 	# Notify the metadata server where the blocks are saved.
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	sock.connect(address)
+
 	p.BuildDataBlockPacket(fname, dnodes)
 
-	# We have to create a new socket to send the blocks and 
-	# we don't know why
-	sockBlks = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	sockBlks.connect(address)
-	sockBlks.sendall(p.getEncodedPacket())
+	sock.sendall(p.getEncodedPacket())
+	sock.close()
 
 def copyFromDFS(address, fname, path):
 	""" Contact the metadata server to ask for the file blocks of
