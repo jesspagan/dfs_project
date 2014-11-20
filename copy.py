@@ -30,7 +30,7 @@ def copyToDFS(address, fname, path):
 
 
 	# Read file
-	f = open(path, 'r')
+	f = open(path, 'rb')
 	fdata = f.read()
 	f.close()
 
@@ -62,6 +62,19 @@ def copyToDFS(address, fname, path):
 
 		dnsize = len(dnodes)
 		bsize = (fsize/dnsize)
+		# counter = 1
+		# dsize = fsize/dnsize
+		# tmp = dsize
+
+	# Verify if the data block size is greater than the buffer size	
+		# while(tmp > 1024):
+		# 	counter += 1
+		# 	tmp = dsize / counter
+
+		# chunks = counter * dnsize
+		# bsize = (fsize / chunks)
+
+		# print "Chunks: ", chunks, "bsize: ", bsize
 
 		for i in range(0, fsize, bsize):
 			if (i/bsize) + 1 == dnsize:
@@ -76,7 +89,7 @@ def copyToDFS(address, fname, path):
 
 	# Send the blocks to the data servers
 
-	print blist
+
 	for i in dnodes:
 		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sockdn.connect((i[0], i[1]))
@@ -85,10 +98,26 @@ def copyToDFS(address, fname, path):
 		sockdn.sendall(p.getEncodedPacket())
 		r = sockdn.recv(1024)
 
+		data = blist.pop(0)
+
 		if r == "OK":
-			sockdn.sendall(blist.pop(0))
+			size = len(data)
+
+			sockdn.sendall(str(size))
 			r = sockdn.recv(1024)
+
+			while len(data) > 0:
+				print data
+				if data > 1024:
+					a = data[0:1024]
+					data = data[1024:]
+					print a
+
+					sockdn.sendall(a)
+					r = sockdn.recv(1024)
+
 			#Adding the chunk id to the data nodes list 
+			r = sockdn.recv(1024)
 			i.append(r)
 	
 		sockdn.close()
@@ -132,11 +161,21 @@ def copyFromDFS(address, fname, path):
 
 		p.BuildGetDataBlockPacket(dnode[2])
 		sockdn.sendall(p.getEncodedPacket())
+		dsize = sockdn.recv(1024)
+		print dsize
+		dsize = int(dsize)
+
+		sockdn.sendall("OK")
 
 		# Save the file
 		print "antes de"
-		r = sockdn.recv(1024)
-		f.write(r)
+		data = ""
+		while(len(data) < dsize):
+			res = sockdn.recv(1024)
+			data = data + res
+			sockdn.sendall("OK")
+
+		f.write(data)
 		sockdn.close()
 
 

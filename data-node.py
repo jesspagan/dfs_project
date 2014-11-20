@@ -66,9 +66,18 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 		f = open(DATA_PATH + blockid, 'w')
 
 		# Receive the data block.
-		block = self.request.recv(1024)
-		f.write(block)
-		print block
+		bsize = self.request.recv(1024)
+		self.request.send("OK")
+		
+		bsize = int(bsize)
+		
+		data = ""
+		while (len(data) < bsize):
+			res = self.request.recv(1024)
+			data = data + res
+			self.request.send("OK")
+
+		f.write(data)
 
 		# Send the block id back
 		self.request.sendall(blockid)
@@ -80,14 +89,24 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 		# Get the block id from the packet
 		blockid = p.getBlockID()
 
-
 		# Read the file with the block id data
 		f = open(DATA_PATH + blockid, 'r')
 		data = f.read()
 		f.close()
 
+		dsize = len(data)
+		self.request.sendall(str(dsize))
+		res = self.request.recv(1024)
+
 		# Send it back to the copy client.
-		self.request.sendall(data)
+		while len(data) > 0:
+				if data > 1024:
+					a = data[0:1024]
+					data = data[1024:]
+
+					sockdn.sendall(a)
+					r = sockdn.recv(1024)
+
 
 
 	def handle(self):

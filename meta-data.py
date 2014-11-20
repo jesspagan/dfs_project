@@ -97,7 +97,7 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 
 	def handle_blocks(self, db, p):
 		"""Add the data blocks to the file inode"""
-		print "Estoy dentro de handle_blocks"
+		# print "Estoy dentro de handle_blocks"
 
 		# Get file name and blocks from packet
 		fname = p.getFileName()
