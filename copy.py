@@ -91,23 +91,20 @@ def copyToDFS(address, fname, path):
 			while len(data) > 0:
 				chunk = data[0:1024]
 				data = data[1024:]
-				print chunk
+				# print chunk
 
 				sockdn.sendall(chunk)
 				r = sockdn.recv(1024)
-				print r
+				# print r
 
 			#Adding the chunk id to the data nodes list
 			sockdn.sendall("OK")
 			r = sockdn.recv(1024)
-			print "Unique: ", r
-			
 			i.append(r)
-			print i
 
 		sockdn.close()
 
-		print dnodes
+
 	# Notify the metadata server where the blocks are saved.
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect(address)
@@ -116,6 +113,8 @@ def copyToDFS(address, fname, path):
 
 	sock.sendall(p.getEncodedPacket())
 	sock.close()
+
+
 
 def copyFromDFS(address, fname, path):
 	""" Contact the metadata server to ask for the file blocks of
@@ -138,7 +137,7 @@ def copyFromDFS(address, fname, path):
 	dnList = p.getDataNodes()
 
 	print dnList
-	f = open(path, 'a')
+	f = open(path, 'wb')
 
 	# Connect to each data node to retrieve 
 	for dnode in dnList:
@@ -147,18 +146,20 @@ def copyFromDFS(address, fname, path):
 
 		p.BuildGetDataBlockPacket(dnode[2])
 		sockdn.sendall(p.getEncodedPacket())
+
 		dsize = sockdn.recv(1024)
 		print dsize
 		dsize = int(dsize)
 
 		sockdn.sendall("OK")
 
+
 		# Save the file
 		print "antes de"
 		data = ""
 		while(len(data) < dsize):
-			res = sockdn.recv(1024)
-			data = data + res
+			r = sockdn.recv(1024)
+			data = data + r
 			sockdn.sendall("OK")
 
 		f.write(data)

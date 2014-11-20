@@ -1,13 +1,16 @@
 ###############################################################################
 #
-# Filename: meta-data.py
-# Author: Jose R. Ortiz and ... (hopefully some students contribution)
+# Filename: meta_data.py
+# Author: Jose R. Ortiz, Julio J. De la Cruz and Jessica Pagan
+# Course: CCOM4017
+#
+# Department of Computer Science
+# University of Puerto Rico, Rio Piedras Campus
 #
 # Description:
-# 	MySQL support library for the DFS project. Database info for the 
-#       metadata server.
-#
-# Please modify globals with appropiate info.
+#	Link between clients and data base.
+# 	Communicates with mds_db.py and request to run queries on data base.
+#	
 
 from mds_db import *
 from Packet import *
