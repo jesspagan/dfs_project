@@ -108,22 +108,18 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 
 			self.request.sendall(chunk)
 			r = self.request.recv(1024)
-			print r
 
 		self.request.close()
 
 
 	def handle(self):
 		msg = self.request.recv(1024)
-		print msg, type(msg)
 
 		p = Packet()
 		p.DecodePacket(msg)
 
 		cmd = p.getCommand()
-		print cmd
 		if cmd == "put":
-			print "put"
 			self.handle_put(p)
 
 		elif cmd == "get":

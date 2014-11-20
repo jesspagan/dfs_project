@@ -91,11 +91,9 @@ def copyToDFS(address, fname, path):
 			while len(data) > 0:
 				chunk = data[0:1024]
 				data = data[1024:]
-				# print chunk
 
 				sockdn.sendall(chunk)
 				r = sockdn.recv(1024)
-				# print r
 
 			#Adding the chunk id to the data nodes list
 			sockdn.sendall("OK")
@@ -136,7 +134,6 @@ def copyFromDFS(address, fname, path):
 	p.DecodePacket(r)
 	dnList = p.getDataNodes()
 
-	print dnList
 	f = open(path, 'wb')
 
 	# Connect to each data node to retrieve 
@@ -148,14 +145,12 @@ def copyFromDFS(address, fname, path):
 		sockdn.sendall(p.getEncodedPacket())
 
 		dsize = sockdn.recv(1024)
-		print dsize
 		dsize = int(dsize)
 
 		sockdn.sendall("OK")
 
 
 		# Save the file
-		print "antes de"
 		data = ""
 		while(len(data) < dsize):
 			r = sockdn.recv(1024)
