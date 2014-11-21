@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# Filename: meta_data.py
+# Filename: meta-data.py
 # Author: Jose R. Ortiz, Julio J. De la Cruz and Jessica Pagan
 # Course: CCOM4017
 #
@@ -28,56 +28,58 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 		"""Register a new client to the DFS  ACK if successfully REGISTERED
 			NAK if problem, DUP if the IP and port already registered
 		"""
+
 		try:
 			# If data node registration was successfull, send acknowledge
 			if db.AddDataNode(p.getAddr(), p.getPort()) != 0:
-				# print "done"
 				self.request.sendall("ACK") 
 
 			# If data node is duplicate, send duplicated
 			else:
-				# print "exists"
 				self.request.sendall("DUP")
+
 
 		# If something went wrong, send no acknowledge
 		except:
-			# print e
 			self.request.sendall("NAK")
+
 
 	def handle_list(self, db):
 		"""Get the file list from the database and send list to client"""
+
 		try:
 			# Search files information from data base
 			dbfiles = db.GetFiles()
-			# print dbfiles, "este es el file de los datos"
 
 			# Create packet for sending to client
 			p = Packet()
 			p.BuildListResponse(dbfiles)
-			# print p.getFileArray(), "este es el filelist"
 
 			# Sending encoded packet to list client
 			self.request.sendall(p.getEncodedPacket())
 
+
 		except:
 			self.request.sendall("NAK")	
+
 
 	def handle_put(self, db, p):
 		"""Insert new file into the database and send data nodes to save
 		   the file.
 		"""
 	       
-		# Fill code 
 		info = p.getFileInfo()
 
+		# If file inserted successfully, 
+		# send data nodes available in data base.
 		if db.InsertFile(info[0], info[1]):
-			# Fill code
 			dnodes = db.GetDataNodes()
 			p.BuildPutResponse(dnodes)
 			self.request.sendall(p.getEncodedPacket())
 			
 		else:
 			self.request.sendall("DUP")
+
 	
 	def handle_get(self, db, p):
 		"""Check if file is in database and return list of
@@ -85,10 +87,10 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 		"""
 
 		# Get the file name from packet and then 
-		# get the fsize and array of metadata server
+		# get the file size and array of metadata server
 		fname = p.getFileName()
 		fsize, MetaArray = db.GetFileInode(fname)
-		print MetaArray
+
 
 		if fsize:
 			p.BuildGetResponse(MetaArray, fsize)
@@ -100,7 +102,6 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 
 	def handle_blocks(self, db, p):
 		"""Add the data blocks to the file inode"""
-		# print "Estoy dentro de handle_blocks"
 
 		# Get file name and blocks from packet
 		fname = p.getFileName()
@@ -121,14 +122,14 @@ class MetadataTCPHandler(SocketServer.BaseRequestHandler):
 
 		# Receive a msg from the list, data-node, or copy clients
 		msg = self.request.recv(1024)
-		# print msg, type(msg)
 		
 		# Decode the packet received
 		p.DecodePacket(msg)
-	
 
 		# Extract the command part of the received packet
 		cmd = p.getCommand()
+
+
 		# Invoke the proper action 
 		if   cmd == "reg":
 			# Registration client

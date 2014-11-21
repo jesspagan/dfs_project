@@ -1,11 +1,20 @@
 ###############################################################################
 #
-# Filename: mds_db.py
-# Author: Jose R. Ortiz and ... (hopefully some students contribution)
+# Filename: copy.py
+# Author: Jose R. Ortiz, Julio J. De la Cruz and Jessica Pagan
+# Course: CCOM4017
+#
+# Department of Computer Science
+# University of Puerto Rico, Rio Piedras Campus
 #
 # Description:
-# 	Copy client for the DFS
+#	Write files in the DFS:
+#		Contact the meta-data for register the file in the data-base
+#		Divide the file into data blocks and distribute them to data-nodes
 #
+#	Read files from the DFS:
+#		Contact the meta-data asking for the blocks id of a specific file
+#		Retrieve the file blocks from the data servers
 #
 
 import socket
@@ -34,8 +43,8 @@ def copyToDFS(address, fname, path):
 	fdata = f.read()
 	f.close()
 
+	# Get the size of the file
 	fsize = len(fdata)
-
 
 	# Create a Put packet with the fname and the length of the data,
 	# and sends it to the metadata server 
@@ -73,14 +82,18 @@ def copyToDFS(address, fname, path):
 
 	# Send the blocks to the data servers
 	for i in dnodes:
+		# Connecto to the data node
 		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sockdn.connect((i[0], i[1]))
 
+		# Create a packet object to put data
 		p.BuildPutPacket(fname, fsize)
 		sockdn.sendall(p.getEncodedPacket())
 		r = sockdn.recv(1024)
 
+		# Take the data block that will be send to data node
 		data = blist.pop(0)
+
 
 		if r == "OK":
 			size = len(data)
@@ -88,6 +101,7 @@ def copyToDFS(address, fname, path):
 			sockdn.sendall(str(size))
 			r = sockdn.recv(1024)
 
+			# Send the data block into 1024 size parts
 			while len(data) > 0:
 				chunk = data[0:1024]
 				data = data[1024:]
@@ -103,10 +117,11 @@ def copyToDFS(address, fname, path):
 		sockdn.close()
 
 
-	# Notify the metadata server where the blocks are saved.
+	# Connect to the meta data
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect(address)
 
+	# Create a packet object to register data blocks into meta data
 	p.BuildDataBlockPacket(fname, dnodes)
 
 	sock.sendall(p.getEncodedPacket())
@@ -124,39 +139,49 @@ def copyFromDFS(address, fname, path):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect(address)
 
+
+	# Create a packet object to get block ids from meta data
 	p = Packet()
 	p.BuildGetPacket(fname)
 	sock.sendall(p.getEncodedPacket())
 
-	
-	# If there is no error response Retreive the data blocks
+
+	# If there is no error response, retreive the data blocks
 	r = sock.recv(1024)
 	p.DecodePacket(r)
 	dnList = p.getDataNodes()
 
+
+	# Create file to store data from blocks
 	f = open(path, 'wb')
 
-	# Connect to each data node to retrieve 
+
+	# Get data blocks from data servers
 	for dnode in dnList:
+		# Contact the data node
 		sockdn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		sockdn.connect((dnode[0], dnode[1]))
 
+
+		# Create a packet object to get data from data node
 		p.BuildGetDataBlockPacket(dnode[2])
 		sockdn.sendall(p.getEncodedPacket())
 
+		# Get the data size of the data that will be receive
 		dsize = sockdn.recv(1024)
 		dsize = int(dsize)
 
 		sockdn.sendall("OK")
 
 
-		# Save the file
+		# Get data in 1024 size parts
 		data = ""
 		while(len(data) < dsize):
 			r = sockdn.recv(1024)
 			data = data + r
 			sockdn.sendall("OK")
 
+		# Write data to file
 		f.write(data)
 		sockdn.close()
 

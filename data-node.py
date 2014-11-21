@@ -1,10 +1,16 @@
 ###############################################################################
 #
 # Filename: data-node.py
-# Author: Jose R. Ortiz and ... (hopefully some students contribution)
+# Author: Jose R. Ortiz, Julio J. De la Cruz and Jessica Pagan
+# Course: CCOM4017
+#
+# Department of Computer Science
+# University of Puerto Rico, Rio Piedras Campus
 #
 # Description:
 # 	data node server for the DFS
+#	It will be register with the data node
+#	Connect to copy client to storage or retrieve data from its directory
 #
 
 from Packet import *
@@ -25,11 +31,11 @@ def register(meta_ip, meta_port, data_ip, data_port):
 	"""
 
 	# Establish connection
-
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.connect((meta_ip, meta_port))
 		
 
+	# Register data_node to meta_data
 	try:
 		response = "NAK"
 		sp = Packet()
@@ -44,6 +50,7 @@ def register(meta_ip, meta_port, data_ip, data_port):
 		 	if response == "NAK":
 				print "Registratation ERROR"
 
+
 	finally:
 		sock.close()
 	
@@ -51,7 +58,6 @@ def register(meta_ip, meta_port, data_ip, data_port):
 class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 
 	def handle_put(self, p):
-
 		"""Receives a block of data from a copy client, and 
 		   saves it with an unique ID.  The ID is sent back to the
 		   copy client.
@@ -69,21 +75,27 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 		bsize = self.request.recv(1024)
 		self.request.send("OK")
 		
+		# Convert the socket response in integers
+		# and create the data list that storage the data that will be receive
 		bsize = int(bsize)
-		
 		data = ""
+
+
+		# Send data in 1024 size parts
 		while (len(data) < bsize):
 			r = self.request.recv(1024)
 			data = data + r
 			self.request.send("OK")
 
+		# Save received data to file
 		f.write(data)
 		r = self.request.recv(1024)
 
+
 		# Send the block id back
 		print "Block id:", blockid
-		self.request.sendall(blockid)
 
+		self.request.sendall(blockid)
 		self.request.close()
 
 
@@ -91,11 +103,12 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 		# Get the block id from the packet
 		blockid = p.getBlockID()
 
-		# Read the file with the block id data
+		# Read the file with the block_id
 		f = open(DATA_PATH + blockid, 'rb')
 		data = f.read()
 		f.close()
 
+		# Retrieve and send data size to copy client
 		dsize = len(data)
 
 		self.request.sendall(str(dsize))
@@ -113,15 +126,19 @@ class DataNodeTCPHandler(SocketServer.BaseRequestHandler):
 
 
 	def handle(self):
+		# Receive a msg from the copy client
 		msg = self.request.recv(1024)
 
+		# Define a packet object and decode it
 		p = Packet()
 		p.DecodePacket(msg)
 
+		# Copy client asking for data node to put data
 		cmd = p.getCommand()
 		if cmd == "put":
 			self.handle_put(p)
 
+		# Copy client asking for data node to get data
 		elif cmd == "get":
 			self.handle_get(p)
 		
